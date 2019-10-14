@@ -65,14 +65,15 @@ def adduser():
 		else:
 			result['Call'] = 'Please use POST call only'
 			return json.dumps(result)
-		
+
+# Error while fetching data from postgreSQL		
 	except (Exception, psycopg2.Error) as error:
 		if(connection):
 			result[str(error)] = traceback.format_exc()
 			print("Failed to delete record into the table %s %s"%( str(error),traceback.format_exc()))
 			return json.dumps(result)
 
-	
+# Closing the connection	
 	finally:
 		if(connection):
 			cursor.close()
@@ -82,7 +83,7 @@ def adduser():
 # To update the table
 @app.route('/api/v1/updatecall/', methods = ['GET', 'POST'])
 
-def adduser():
+def update():
 	connection = None
 	result={}
 	try:
@@ -130,13 +131,15 @@ def adduser():
 		else:
 			result['Call'] = 'Please use POST call only'
 			return json.dumps(result)
-		
+
+# Error while fetching data from postgreSQL		
 	except (Exception, psycopg2.Error) as error:
 		if(connection):
 			result[str(error)] = traceback.format_exc()
 			print("Failed to delete record into the table %s %s"%( str(error),traceback.format_exc()))
 			return json.dumps(result)
 
+# Closing the connection
 	finally:
 		if(connection):
 			cursor.close()
@@ -191,19 +194,59 @@ def delete():
 		else:
 			result['Call'] = 'Please use POST call only'
 			return json.dumps(result)
+
+# Error while fetching data from postgreSQL		
+	except (Exception, psycopg2.Error) as error:
+		if(connection):
+			result[str(error)] = traceback.format_exc()
+			print("Failed to delete record into the table %s %s"%( str(error),traceback.format_exc()))
+				return json.dumps(result)
+
+# Closing the connection
+	finally:
+		if(connection):
+			cursor.close()
+			connection.close()
+			print("PostgreSQL connection is closed")
+
+#show all users
+@app.route('/api/v1/getall')
+def fetching():
+	connection=None	
+	result={}
+
+	try:
+	# Fetching the records
+		connection = make_db_connection()
+		cursor = connection.cursor()
+		if request.args.get('name')==None:
+			query = 'select * from Sign'
+		else:
+			query = "select * from Sign where Username ='%s'"%(request.args.get('name'))
 		
+		cursor.execute(query)
+		print("Selecting rows from Sign table using cursor.fetchall")
+		usersign_records = cursor.fetchall()
+		
+		print('Print each row and its value')
+		for i in usersign_records:
+			result[i[0]]={'Username' : i[0], 'Mail ID' : i[2]}
+		return json.dumps(result)	
+
+# Error while fetching data from postgreSQL
 	except (Exception, psycopg2.Error) as error:
 		if(connection):
 			result[str(error)] = traceback.format_exc()
 			print("Failed to delete record into the table %s %s"%( str(error),traceback.format_exc()))
 			return json.dumps(result)
 
-	
+# Closing the connection
 	finally:
 		if(connection):
 			cursor.close()
 			connection.close()
-			print("PostgreSQL connection is closed")
+			print("PostgreSQL connection is closed.")
+			
 
 
 #main
